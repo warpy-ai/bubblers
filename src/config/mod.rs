@@ -111,3 +111,35 @@ impl<'a> CliConfig<'a> {
         &self.commands
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+
+    #[test]
+    fn test_cli_config() {
+        let mut cli_config = CliConfig::new("test_app", "1.0", "A test application");
+
+        let mut command = CommandConfig::new_standard(
+            "test_cmd",
+            "A test command",
+            Arc::new(|args| {
+                println!("Executing test_cmd with args: {:?}", args);
+            }),
+        );
+
+        command.add_arg(ArgConfig {
+            name: "message",
+            help: "A test message".to_string(),
+            required: true,
+        });
+
+        cli_config.add_command(command);
+
+        assert_eq!(cli_config.app_name, "test_app");
+        assert_eq!(cli_config.version, "1.0");
+        assert_eq!(cli_config.about, "A test application");
+        assert_eq!(cli_config.commands().len(), 1);
+    }
+}
