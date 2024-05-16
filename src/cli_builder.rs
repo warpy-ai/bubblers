@@ -32,34 +32,26 @@ pub fn execute_cli(cli_config: &CliConfig) {
             let args: Vec<String> = cmd
                 .args
                 .iter()
-                .filter_map(|arg| {
-                    sub_matches
-                        .get_one::<String>(arg.name)
-                        .map(|s| s.to_string())
-                })
+                .map(|arg| sub_matches.get_one::<String>(arg.name).unwrap().to_string())
                 .collect();
-
             match &cmd.command_type {
                 CommandType::Standard(_) => {
                     if args.is_empty() {
                         cmd.execute_action(None);
-                    } else {
-                        cmd.execute_action(Some(&args));
                     }
+                    cmd.execute_action(Some(&args));
                 }
                 CommandType::UI(_) => {
                     if args.is_empty() {
                         cmd.execute_action(None);
-                    } else {
-                        cmd.execute_action(Some(&args));
                     }
+                    cmd.execute_action(Some(&args));
                 }
                 CommandType::UIWithReturn(_) => {
                     if args.is_empty() {
                         cmd.execute_action(None);
-                    } else {
-                        cmd.execute_action(Some(&args));
                     }
+                    cmd.execute_action(Some(&args));
                 }
             }
         } else {
