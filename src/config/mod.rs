@@ -1,5 +1,7 @@
 use std::{io, sync::Arc};
 
+use crate::wrappers::{show_input_form, text_area};
+
 #[derive(Clone)]
 pub struct ArgConfig {
     pub name: &'static str,
@@ -105,6 +107,35 @@ impl<'a> CliConfig<'a> {
     pub fn add_command(&mut self, command: CommandConfig<'a>) -> &mut Self {
         self.commands.push(command);
         self
+    }
+
+    pub fn add_input(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        placeholder: &'static str,
+        initial_text: &'static str,
+        label: &'static str,
+    ) {
+        let input_action = move || show_input_form(placeholder, initial_text, label);
+
+        let command = CommandConfig::new_ui_with_return(name, description, Arc::new(input_action));
+
+        self.add_command(command);
+    }
+
+    pub fn add_text_area(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        label: &'a str,
+        visible_lines: usize,
+    ) {
+        let text_area = move || text_area(label, visible_lines);
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(text_area));
+
+        self.add_command(command);
     }
 
     pub fn commands(&self) -> &[CommandConfig] {
