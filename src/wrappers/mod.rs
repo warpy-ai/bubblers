@@ -3,7 +3,7 @@ use std::io::{self, Write};
 use crossterm::execute;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType};
 use rustubble::input::{handle_input, TextInput};
-use rustubble::list::{handle_list, Item, ItemList};
+use rustubble::text_area::{handle_text_area, TextArea};
 
 pub fn show_input_form(
     placeholder: &str,
@@ -35,34 +35,25 @@ pub fn show_input_form(
     Ok(text_2)
 }
 
-fn show_ui_terminal_app() -> Result<(), io::Error> {
-    enable_raw_mode()?;
+pub fn text_area(label: &str, visible_lines: usize) -> Result<(), io::Error> {
+    io::stdout().flush().unwrap();
 
-    let mut list = ItemList::new(
-        "Groceries".to_string(),
-        vec![
-            Item {
-                title: "Pocky".to_string(),
-                subtitle: "Expensive".to_string(),
-            },
-            Item {
-                title: "Ginger".to_string(),
-                subtitle: "Exquisite".to_string(),
-            },
-            Item {
-                title: "Coke".to_string(),
-                subtitle: "Cheap".to_string(),
-            },
-            Item {
-                title: "Sprite".to_string(),
-                subtitle: "Cheap".to_string(),
-            },
-        ],
-    );
+    enable_raw_mode().unwrap();
 
-    let (x, y) = (5, 5);
-    let list = handle_list(&mut list, x, y);
-    println!("Operation completed.{:?}", list);
+    let mut text_area = TextArea::new(label, Some("Press ESC to exit."), visible_lines);
+    // text_area.render(0, 1); // Initial render at position (0, 1)
 
-    disable_raw_mode()
+    let x = 5;
+    let y = 5;
+
+    execute!(std::io::stdout(), Clear(ClearType::All)).unwrap();
+    let text_area_value = handle_text_area(&mut text_area, x, y);
+
+    let text_2 = format!("Input value: {:?}", text_area_value);
+
+    println!("{}", text_2);
+
+    disable_raw_mode().unwrap();
+
+    Ok(())
 }
