@@ -1,6 +1,6 @@
 use std::{io, sync::Arc};
 
-use crate::wrappers::{show_input_form, text_area};
+use crate::wrappers::{input_form, loader, progress, table, text_area};
 
 #[derive(Clone)]
 pub struct ArgConfig {
@@ -117,7 +117,7 @@ impl<'a> CliConfig<'a> {
         initial_text: &'static str,
         label: &'static str,
     ) {
-        let input_action = move || show_input_form(placeholder, initial_text, label);
+        let input_action = move || input_form(placeholder, initial_text, label);
 
         let command = CommandConfig::new_ui_with_return(name, description, Arc::new(input_action));
 
@@ -135,6 +135,47 @@ impl<'a> CliConfig<'a> {
 
         let command = CommandConfig::new_ui(name, description, Arc::new(text_area));
 
+        self.add_command(command);
+    }
+
+    pub fn add_loader(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        text: &'a str,
+        style: &'a str,
+    ) {
+        let loading = move || loader(text.to_string(), style.to_string());
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(loading));
+        self.add_command(command);
+    }
+
+    pub fn add_table(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        headers: Vec<&'static str>,
+        rows: Vec<Vec<&'static str>>,
+    ) {
+        let table = move || table(headers.clone(), rows.clone());
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(table));
+        self.add_command(command);
+    }
+
+    pub fn add_progress_bar(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        progress: f32,
+        length: u16,
+        prefix: &'static str,
+        start_color: &'static str,
+        end_color: &'static str,
+    ) {
+        let progress = move || progress(prefix, progress, length, start_color, end_color);
+        let command = CommandConfig::new_ui(name, description, Arc::new(progress));
         self.add_command(command);
     }
 
