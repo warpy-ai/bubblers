@@ -115,6 +115,8 @@ impl<'a> CliConfig<'a> {
         self
     }
 
+    // Helper functions to add rustubble TUI's commands
+
     pub fn add_input(
         &mut self,
         name: &'static str,
