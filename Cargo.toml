@@ -2,6 +2,12 @@
 name = "bubblers"
 version = "0.1.0"
 edition = "2021"
+authors = ["Lucas Oliveira <jucas.oliveira@gmail.com>"] # List of crate authors.
+description = "Crustacean CLI that expels bubbles"
+license = "Apache-2.0"
+repository = "https://github.com/warpy-ai/bubblers"
+keywords = ["cli", "terminal"]                          # arbitrary keywords
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dev-dependencies]
