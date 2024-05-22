@@ -1,6 +1,12 @@
 use std::{io, sync::Arc};
 
-use crate::wrappers::{show_input_form, text_area};
+use crossterm::style::Color;
+use rustubble::list::Item;
+
+use crate::wrappers::{
+    input_form, item_list, loader, menu_list, stopwatch, table, text_area, timed_progress, timer,
+    viewport,
+};
 
 #[derive(Clone)]
 pub struct ArgConfig {
@@ -13,7 +19,7 @@ pub struct ArgConfig {
 pub enum CommandType<'a> {
     Standard(Arc<dyn Fn(&[String]) + Send + Sync + 'a>),
     UI(Arc<dyn Fn() -> Result<(), io::Error> + Send + Sync + 'a>),
-    UIWithReturn(Arc<dyn Fn() -> Result<String, io::Error> + Send + Sync + 'a>),
+    UIWithReturn(Arc<dyn Fn() -> Result<Option<String>, io::Error> + Send + Sync + 'a>),
 }
 
 #[derive(Clone)]
@@ -54,7 +60,7 @@ impl<'a> CommandConfig<'a> {
     pub fn new_ui_with_return(
         name: &'static str,
         description: &'static str,
-        action: Arc<dyn Fn() -> Result<String, io::Error> + Send + Sync + 'a>,
+        action: Arc<dyn Fn() -> Result<Option<String>, io::Error> + Send + Sync + 'a>,
     ) -> Self {
         CommandConfig {
             name,
@@ -80,7 +86,7 @@ impl<'a> CommandConfig<'a> {
             CommandType::UI(action) => action().unwrap(),
             CommandType::UIWithReturn(action) => {
                 let result = action().unwrap();
-                println!("Result: {}", result);
+                println!("Result: {:?}", result);
             }
         }
     }
@@ -109,6 +115,8 @@ impl<'a> CliConfig<'a> {
         self
     }
 
+    // Helper functions to add rustubble TUI's commands
+
     pub fn add_input(
         &mut self,
         name: &'static str,
@@ -117,7 +125,7 @@ impl<'a> CliConfig<'a> {
         initial_text: &'static str,
         label: &'static str,
     ) {
-        let input_action = move || show_input_form(placeholder, initial_text, label);
+        let input_action = move || input_form(placeholder, initial_text, label);
 
         let command = CommandConfig::new_ui_with_return(name, description, Arc::new(input_action));
 
@@ -135,6 +143,109 @@ impl<'a> CliConfig<'a> {
 
         let command = CommandConfig::new_ui(name, description, Arc::new(text_area));
 
+        self.add_command(command);
+    }
+
+    pub fn add_loader(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        text: &'a str,
+        style: &'a str,
+    ) {
+        let loading = move || loader(text.to_string(), style.to_string());
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(loading));
+        self.add_command(command);
+    }
+
+    pub fn add_table(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        headers: Vec<&'static str>,
+        rows: Vec<Vec<&'static str>>,
+    ) {
+        let table = move || table(headers.clone(), rows.clone());
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(table));
+        self.add_command(command);
+    }
+
+    pub fn add_progress_bar(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        progress: f32,
+        length: u16,
+        prefix: &'static str,
+        start_color: Color,
+        end_color: Color,
+    ) {
+        let progress_timed =
+            move || timed_progress(prefix, progress, length, start_color, end_color);
+        let command = CommandConfig::new_ui(name, description, Arc::new(progress_timed));
+        self.add_command(command);
+    }
+
+    pub fn add_timer(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        secs: u64,
+        nanos: u32,
+    ) {
+        let timeed = move || timer(secs, nanos);
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(timeed));
+
+        self.add_command(command);
+    }
+
+    pub fn add_stopwatch(&mut self, name: &'static str, description: &'static str) {
+        let timeed = move || stopwatch();
+        let command = CommandConfig::new_ui(name, description, Arc::new(timeed));
+        self.add_command(command);
+    }
+
+    pub fn add_viewport(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        file_path: String,
+    ) {
+        let viewport = move || viewport(file_path.clone());
+
+        let command = CommandConfig::new_ui(name, description, Arc::new(viewport));
+
+        self.add_command(command);
+    }
+
+    pub fn add_item_list(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        list: Vec<Item>,
+        list_title: String,
+    ) {
+        let new_item_list = move || item_list(list.clone(), list_title.clone());
+
+        let command = CommandConfig::new_ui_with_return(name, description, Arc::new(new_item_list));
+
+        self.add_command(command);
+    }
+
+    pub fn add_menu_list(
+        &mut self,
+        name: &'static str,
+        description: &'static str,
+        list_title: String,
+        list_subtitle: String,
+        list: Vec<String>,
+    ) {
+        let new_menu_list =
+            move || menu_list(list.clone(), list_title.clone(), list_subtitle.clone());
+        let command = CommandConfig::new_ui_with_return(name, description, Arc::new(new_menu_list));
         self.add_command(command);
     }
 
