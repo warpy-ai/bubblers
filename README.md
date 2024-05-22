@@ -4,7 +4,7 @@ Crustacean CLI that expels bubbles
 
 [![Rust](https://github.com/warpy-ai/bubblers/actions/workflows/rust.yml/badge.svg)](https://github.com/warpy-ai/bubblers/actions/workflows/rust.yml)
 
-Bubblers is a simple command line interface (CLI) builder in Rust. It provides an easy way to create CLI applications with minimal configuration.
+Bubblers is a simple command line interface (CLI) builder in Rust. It provides [rustubble](https://github.com/warpy-ai/rustubble) built-in
 
 ## Features
 
